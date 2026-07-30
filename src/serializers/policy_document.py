@@ -2,15 +2,23 @@ from rest_framework import serializers
 from ..models.policy_document import PolicyDocument
 
 class PolicyDocumentSerializer(serializers.ModelSerializer):
-    # Added metadata field for POLICY-2 — WARNING: does not handle null (INC0010001)
+    """
+    HOTFIX applied 2026-07-21 — INC0010001 / POLICY-8
+
+    policy_metadata may be NULL for rows that existed before the CHG0010001
+    migration backfill completed. Both SerializerMethodFields must guard
+    against None before calling .get() — dict methods are not available on None.
+    """
     metadata_version = serializers.SerializerMethodField()
     compliance_flags = serializers.SerializerMethodField()
 
     def get_metadata_version(self, obj):
-        return obj.policy_metadata.get('version', '1.0')  # BUG: throws on null
+        metadata = obj.policy_metadata or {}  # guard against null
+        return metadata.get('version', '1.0')
 
     def get_compliance_flags(self, obj):
-        return obj.policy_metadata.get('compliance_flags', [])  # BUG: throws on null
+        metadata = obj.policy_metadata or {}  # guard against null
+        return metadata.get('compliance_flags', [])
 
     class Meta:
         model = PolicyDocument
