@@ -8,6 +8,8 @@ class PolicyDocument(models.Model):
     state_code = models.CharField(max_length=2, db_index=True)
     effective_date = models.DateField()
     content_url = models.TextField()
+    # Added for Q4 2026 state compliance requirements — POLICY-1
+    policy_metadata = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
